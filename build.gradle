@@ -1,0 +1,69 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+
+plugins {
+    id 'org.jetbrains.kotlin.multiplatform' version '1.9.0'
+}
+
+repositories {
+    mavenCentral()
+    google()
+}
+
+kotlin {
+    jvm()
+    linuxX64()
+    macosX64()
+
+    targets.all {
+        if (it instanceof KotlinNativeTarget) {
+            it.binaries.all {
+                it.freeCompilerArgs += "-Xpartial-linkage=enable"
+            }
+        }
+    }
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation "org.jetbrains.kotlinx:atomicfu:0.22.0"
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation kotlin("test")
+            }
+        }
+
+        jvmMain {
+            dependsOn(commonMain)
+        }
+
+        jvmTest {
+            dependsOn(commonTest)
+        }
+
+        nativeMain {
+            dependsOn(commonMain)
+        }
+
+        nativeTest {
+            dependsOn(commonTest)
+        }
+
+        linuxX64Main {
+            dependsOn(nativeMain)
+        }
+
+        linuxX64Test {
+            dependsOn(nativeTest)
+        }
+
+        macosX64Main {
+            dependsOn(nativeMain)
+        }
+
+        macosX64Test {
+            dependsOn(nativeTest)
+        }
+    }
+}
